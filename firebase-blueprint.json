@@ -1,0 +1,407 @@
+{
+  "entities": {
+    "UserPrivateAccount": {
+      "title": "UserPrivateAccount",
+      "description": "Private user account record containing PII isolated from public discovery.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID matching document ID."
+        },
+        "email": {
+          "type": "string",
+          "description": "Optional authenticated user email address."
+        },
+        "accountTier": {
+          "type": "string",
+          "enum": ["standard"],
+          "description": "Account tier assigned on registration."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when account was created (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when account was last updated (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": ["userId", "accountTier", "createdAt", "updatedAt"]
+    },
+    "UserPublicProfile": {
+      "title": "UserPublicProfile",
+      "description": "Public creator profile used in Discover search and Profile views without PII.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID matching document ID."
+        },
+        "username": {
+          "type": "string",
+          "description": "Public handle (3-30 lowercase alphanumeric, underscore, or dot characters)."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Creator display name (1-50 characters)."
+        },
+        "bio": {
+          "type": "string",
+          "description": "Creator biography (0-200 characters)."
+        },
+        "avatarUrl": {
+          "type": "string",
+          "description": "Optional profile avatar URL."
+        },
+        "discoverable": {
+          "type": "boolean",
+          "description": "Whether the profile appears in Discover queries."
+        },
+        "followersCount": {
+          "type": "integer",
+          "description": "Total follower count."
+        },
+        "followingCount": {
+          "type": "integer",
+          "description": "Total following count."
+        },
+        "videosCount": {
+          "type": "integer",
+          "description": "Total uploaded video count."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of profile creation."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of latest profile update."
+        }
+      },
+      "required": [
+        "userId",
+        "username",
+        "displayName",
+        "bio",
+        "discoverable",
+        "followersCount",
+        "followingCount",
+        "videosCount",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "VideoPost": {
+      "title": "VideoPost",
+      "description": "Short-video metadata document prepared for Firebase Storage media URLs.",
+      "type": "object",
+      "properties": {
+        "authorId": {
+          "type": "string",
+          "description": "Creator UID."
+        },
+        "authorUsername": {
+          "type": "string",
+          "description": "Creator public handle."
+        },
+        "caption": {
+          "type": "string",
+          "description": "Video caption (0-300 characters)."
+        },
+        "visibility": {
+          "type": "string",
+          "enum": ["public", "private"],
+          "description": "Visibility scope of the video post."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending_storage", "ready"],
+          "description": "Processing/storage readiness status."
+        },
+        "storagePath": {
+          "type": "string",
+          "description": "Optional Firebase Storage object path."
+        },
+        "playbackUrl": {
+          "type": "string",
+          "description": "Optional streaming playback URL."
+        },
+        "likesCount": {
+          "type": "integer",
+          "description": "Total likes count."
+        },
+        "commentsCount": {
+          "type": "integer",
+          "description": "Total comments count."
+        },
+        "lastCommentId": {
+          "type": "string",
+          "description": "Most recent comment document ID written atomically during comment create or delete."
+        },
+        "sharesCount": {
+          "type": "integer",
+          "description": "Total shares count."
+        },
+        "viewsCount": {
+          "type": "integer",
+          "description": "Optional total public video view count."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of post creation."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of latest post update."
+        }
+      },
+      "required": [
+        "authorId",
+        "authorUsername",
+        "caption",
+        "visibility",
+        "status",
+        "likesCount",
+        "commentsCount",
+        "sharesCount",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "VynozaNotification": {
+      "title": "VynozaNotification",
+      "description": "User-scoped activity notification for likes, comments, followers, and system notices.",
+      "type": "object",
+      "properties": {
+        "recipientId": {
+          "type": "string",
+          "description": "Target recipient UID matching parent path."
+        },
+        "actorId": {
+          "type": "string",
+          "description": "UID of the user who triggered the notification."
+        },
+        "actorUsername": {
+          "type": "string",
+          "description": "Handle of the acting user."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["like", "comment", "follow", "system"],
+          "description": "Notification category."
+        },
+        "targetVideoId": {
+          "type": "string",
+          "description": "Optional related video ID."
+        },
+        "message": {
+          "type": "string",
+          "description": "Notification message body (1-240 characters)."
+        },
+        "read": {
+          "type": "boolean",
+          "description": "Whether the recipient has read the notification."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the notification was created."
+        }
+      },
+      "required": [
+        "recipientId",
+        "actorId",
+        "actorUsername",
+        "type",
+        "message",
+        "read",
+        "createdAt"
+      ]
+    },
+    "FollowEdge": {
+      "title": "FollowEdge",
+      "description": "Directed follow relationship stored under the follower's following subcollection.",
+      "type": "object",
+      "properties": {
+        "followerId": {
+          "type": "string",
+          "description": "Follower UID matching parent path."
+        },
+        "targetUserId": {
+          "type": "string",
+          "description": "Followed creator UID matching document ID."
+        },
+        "targetUsername": {
+          "type": "string",
+          "description": "Followed creator handle."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when follow relationship was created."
+        }
+      },
+      "required": ["followerId", "targetUserId", "targetUsername", "createdAt"]
+    },
+    "FollowerEdge": {
+      "title": "FollowerEdge",
+      "description": "Zero-PII reciprocal follower record stored under the followed creator's followers subcollection and kept atomically in sync with /users/{followerId}/following/{targetUserId} and followersCount.",
+      "type": "object",
+      "properties": {
+        "followerId": {
+          "type": "string",
+          "description": "Follower UID matching document ID."
+        },
+        "targetUserId": {
+          "type": "string",
+          "description": "Followed creator UID matching parent path."
+        },
+        "followerUsername": {
+          "type": "string",
+          "description": "Follower public handle (3-30 lowercase chars)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when follower relationship was created."
+        }
+      },
+      "required": ["followerId", "targetUserId", "followerUsername", "createdAt"]
+    },
+    "VideoLike": {
+      "title": "VideoLike",
+      "description": "Idempotent per-user video like record stored atomically alongside the video likesCount.",
+      "type": "object",
+      "properties": {
+        "videoId": {
+          "type": "string",
+          "description": "Liked video document ID."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Authenticated user UID who liked the video."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the video was liked."
+        }
+      },
+      "required": ["videoId", "userId", "createdAt"]
+    },
+    "VideoComment": {
+      "title": "VideoComment",
+      "description": "User-authored comment on a video post, stored under /videos/{videoId}/comments/{commentId} and synchronized atomically with commentsCount.",
+      "type": "object",
+      "properties": {
+        "videoId": {
+          "type": "string",
+          "description": "Parent video document ID."
+        },
+        "authorId": {
+          "type": "string",
+          "description": "Authenticated commenter UID."
+        },
+        "authorUsername": {
+          "type": "string",
+          "description": "Commenter public handle."
+        },
+        "authorDisplayName": {
+          "type": "string",
+          "description": "Commenter display name."
+        },
+        "authorAvatarUrl": {
+          "type": "string",
+          "description": "Optional commenter profile picture URL."
+        },
+        "text": {
+          "type": "string",
+          "description": "Comment body text (1-500 characters)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the comment was created."
+        }
+      },
+      "required": [
+        "videoId",
+        "authorId",
+        "authorUsername",
+        "authorDisplayName",
+        "text",
+        "createdAt"
+      ]
+    },
+    "SavedVideo": {
+      "title": "SavedVideo",
+      "description": "Owner-scoped saved/bookmarked video record preventing duplicates per user.",
+      "type": "object",
+      "properties": {
+        "videoId": {
+          "type": "string",
+          "description": "Saved video document ID matching document ID."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Authenticated owner UID matching parent path."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the video was saved."
+        }
+      },
+      "required": ["videoId", "userId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserPrivateAccount" },
+      "description": "Owner-only private user account PII and metadata."
+    },
+    "/users_public/{userId}": {
+      "schema": { "$ref": "#/entities/UserPublicProfile" },
+      "description": "Public creator profiles without PII for Profile and Discover views."
+    },
+    "/videos/{videoId}": {
+      "schema": { "$ref": "#/entities/VideoPost" },
+      "description": "Short-video post metadata for Home feed, Discover search, and Profile uploads."
+    },
+    "/videos/{videoId}/likes/{userId}": {
+      "schema": { "$ref": "#/entities/VideoLike" },
+      "description": "Canonical per-user like records preventing duplicate likes and securing atomic likesCount updates."
+    },
+    "/videos/{videoId}/comments/{commentId}": {
+      "schema": { "$ref": "#/entities/VideoComment" },
+      "description": "Per-video comments with strict author ownership and atomic commentsCount coupling."
+    },
+    "/users/{userId}/notifications/{notificationId}": {
+      "schema": { "$ref": "#/entities/VynozaNotification" },
+      "description": "Owner-scoped notifications for likes, comments, and followers."
+    },
+    "/users/{userId}/following/{targetUserId}": {
+      "schema": { "$ref": "#/entities/FollowEdge" },
+      "description": "Owner-scoped following edges coupled atomically with /users/{targetUserId}/followers/{userId}."
+    },
+    "/users/{userId}/followers/{followerUserId}": {
+      "schema": { "$ref": "#/entities/FollowerEdge" },
+      "description": "Zero-PII follower records stored under the followed user and synchronized atomically with following edges and followersCount."
+    },
+    "/users/{userId}/liked_videos/{videoId}": {
+      "schema": { "$ref": "#/entities/VideoLike" },
+      "description": "Owner-scoped liked video index kept atomically in sync with /videos/{videoId}/likes/{userId}."
+    },
+    "/users/{userId}/saved_videos/{videoId}": {
+      "schema": { "$ref": "#/entities/SavedVideo" },
+      "description": "Owner-only saved/bookmarked videos list preventing duplicates and cross-user access."
+    }
+  }
+}

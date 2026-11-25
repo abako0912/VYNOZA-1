@@ -1,0 +1,154 @@
+<resources>
+    <string name="app_name">VYNOZA</string>
+    <string name="brand_tagline">Global Short-Video Social Studio</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_discover">Discover</string>
+    <string name="nav_create">Create</string>
+    <string name="nav_notifications">Inbox</string>
+    <string name="nav_profile">Profile</string>
+
+    <!-- Auth -->
+    <string name="auth_headline">Create, share, and discover in motion.</string>
+    <string name="auth_subtitle">Sign in or create an account with your email and password to access your VYNOZA feed, creator profile, and real-time activity.</string>
+    <string name="auth_sign_in_cta">Sign In</string>
+    <string name="auth_create_account_cta">Create Account</string>
+    <string name="auth_reset_password_cta">Send Reset Link</string>
+    <string name="auth_forgot_password">Forgot password?</string>
+    <string name="auth_back_to_sign_in">Back to Sign In</string>
+    <string name="auth_security_note">Protected by Firebase Email/Password Authentication &amp; Zero-Trust Cloud Firestore. Anonymous access is disabled.</string>
+
+    <!-- Home -->
+    <string name="home_tab_for_you">For You</string>
+    <string name="home_tab_following">Following</string>
+    <string name="home_empty_title">Your VYNOZA feed is ready</string>
+    <string name="home_empty_subtitle">No public short videos are published yet. Record or select a video in Create, or discover creators once they join.</string>
+    <string name="home_empty_cta">Open Create Studio</string>
+
+    <!-- Discover -->
+    <string name="discover_title">Discover</string>
+    <string name="discover_search_hint">Search creators or video captions</string>
+    <string name="discover_filter_all">All</string>
+    <string name="discover_filter_creators">Creators</string>
+    <string name="discover_filter_videos">Videos</string>
+    <string name="discover_empty_title">No matching creators or videos</string>
+    <string name="discover_empty_subtitle">Try another search term or check back as creators publish public profiles and videos.</string>
+
+    <!-- Create -->
+    <string name="create_title">Create Studio</string>
+    <string name="create_subtitle">Capture a clip with your camera or choose an existing video from your device gallery.</string>
+    <string name="create_pick_gallery">Select from Gallery</string>
+    <string name="create_record_camera">Record Video</string>
+    <string name="create_permission_rationale">Camera and microphone permissions are required to record a video.</string>
+    <string name="create_storage_notice_title">Cloudinary Video Upload</string>
+    <string name="create_storage_notice_body">Selected, recorded, or Templates Studio videos (MP4, MOV, WebM up to 100 MB) are uploaded to Cloudinary only when you tap Publish Post, then saved to Cloud Firestore.</string>
+    <string name="create_publish_cta">Publish Post</string>
+    <string name="create_caption_hint">Write a caption for your short video (optional)</string>
+    <string name="create_visibility_public">Public</string>
+    <string name="create_visibility_private">Private</string>
+
+    <!-- Notifications -->
+    <string name="notifications_title">Notifications</string>
+    <string name="notifications_empty_title">All caught up</string>
+    <string name="notifications_empty_subtitle">Likes, comments, and new followers will appear here in real time.</string>
+
+    <!-- Profile -->
+    <string name="profile_title">Profile</string>
+    <string name="profile_edit">Edit Profile</string>
+    <string name="profile_sign_out">Sign Out</string>
+    <string name="profile_followers">Followers</string>
+    <string name="profile_following">Following</string>
+    <string name="profile_videos">Videos</string>
+    <string name="profile_empty_videos_title">No uploaded videos yet</string>
+    <string name="profile_empty_videos_subtitle">Videos you publish to VYNOZA will appear in your creator grid.</string>
+    <string name="profile_save">Save Changes</string>
+    <string name="profile_cancel">Cancel</string>
+
+    <!-- Common -->
+    <string name="retry">Retry</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="follow">Follow</string>
+    <string name="following_state">Following</string>
+    <string name="like_video">Like video</string>
+    <string name="unlike_video">Unlike video</string>
+    <string name="updating_like">Updating like</string>
+
+    <!-- Comments -->
+    <string name="comments_header_format">Comments (%1$d)</string>
+    <string name="open_comments">Open comments</string>
+    <string name="close_comments">Close comments</string>
+    <string name="comments_empty_title">No comments yet</string>
+    <string name="comments_empty_subtitle">Be the first to share a comment on this video.</string>
+    <string name="comment_input_hint">Add a comment...</string>
+    <string name="send_comment">Send comment</string>
+    <string name="delete_comment">Delete comment</string>
+    <string name="comment_just_now">Just now</string>
+
+    <!-- Feed Follow, Save & Share -->
+    <string name="quick_follow_creator">Follow @%1$s</string>
+    <string name="quick_following_creator">Following @%1$s</string>
+    <string name="save_video">Save video</string>
+    <string name="unsave_video">Remove saved video</string>
+    <string name="updating_save">Updating saved state</string>
+    <string name="saved_label">Saved</string>
+    <string name="save_label">Save</string>
+    <string name="share_video">Share video</string>
+    <string name="share_label">Share</string>
+    <string name="share_video_chooser_title">Share VYNOZA video</string>
+    <string name="share_unavailable">This video link is not ready to share yet.</string>
+    <string name="profile_tab_videos">My Videos</string>
+    <string name="profile_tab_saved">Saved</string>
+    <string name="profile_empty_saved_title">No saved videos yet</string>
+    <string name="profile_empty_saved_subtitle">Tap the bookmark icon on any video in the feed to keep it in your Saved collection.</string>
+
+    <!-- Public Profile -->
+    <string name="public_profile_back">Navigate back</string>
+    <string name="public_profile_videos_section">Public Videos</string>
+    <string name="public_profile_empty_videos_title">No public videos yet</string>
+    <string name="public_profile_empty_videos_subtitle">\@%1$s hasn\'t published any public videos yet.</string>
+    <string name="share_profile">Share profile</string>
+    <string name="share_profile_chooser_title">Share VYNOZA creator</string>
+    <string name="share_profile_unavailable">This profile link cannot be shared right now.</string>
+    <string name="public_profile_load_more">Load more videos</string>
+    <string name="public_profile_not_found">This creator profile is unavailable.</string>
+    <string name="view_profile_action">View creator profile</string>
+
+    <!-- Templates Studio -->
+    <string name="templates_studio_title">Templates Studio</string>
+    <string name="templates_studio_entry_title">VYNOZA Templates Studio</string>
+    <string name="templates_studio_entry_subtitle">Transform photos &amp; videos with real on-device Clone &amp; Echo, Cinematic Portrait, Motion Blur, Multiple Exposure, and Memories templates.</string>
+    <string name="templates_studio_entry_cta">Open Templates Studio</string>
+    <string name="templates_studio_back">Back to Create</string>
+    <string name="templates_studio_choose_media">Choose Photo or Video</string>
+    <string name="templates_studio_choose_photo">Choose Photo</string>
+    <string name="templates_studio_choose_video">Choose Video</string>
+    <string name="templates_studio_use_template">Use Template</string>
+    <string name="templates_studio_compare">Hold or toggle to compare original</string>
+    <string name="templates_studio_save_photo">Save Photo</string>
+    <string name="templates_studio_save_video">Save Video</string>
+    <string name="templates_studio_publish_feed">Publish to VYNOZA</string>
+    <string name="templates_studio_cancel_export">Cancel Export</string>
+    <string name="templates_studio_rendering">Rendering edited media...</string>
+    <string name="templates_studio_preview_sample">Sample Preview</string>
+    <string name="templates_studio_media_selected">Your Media</string>
+
+    <!-- In-App Updates -->
+    <string name="update_available_title">Update Available</string>
+    <string name="update_now">Update Now</string>
+    <string name="update_later">Later</string>
+    <string name="update_cancel_download">Cancel Download</string>
+    <string name="update_retry">Retry Download</string>
+    <string name="update_check_cta">Check for Updates</string>
+    <string name="update_checking">Checking GitHub Releases...</string>
+    <string name="update_up_to_date">You are on the latest version of VYNOZA.</string>
+    <string name="update_verifying">Verifying APK integrity...</string>
+    <string name="update_ready_to_install">APK verified and ready to install.</string>
+    <string name="update_install_now">Open Installer</string>
+    <string name="update_permission_title">Allow App Installs</string>
+    <string name="update_permission_body">Android requires one-time permission to install VYNOZA updates from this app. Enable \"Allow from this source\" on the next screen, then return here.</string>
+    <string name="update_allow_installs">Allow &amp; Continue</string>
+    <string name="update_data_safe_note">Your account, videos, followers, likes, and comments stay preserved in the cloud.</string>
+    <string name="update_section_title">App Version &amp; Updates</string>
+</resources>
+

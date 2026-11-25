@@ -1,0 +1,6 @@
+{
+  "name": "VYNOZA",
+  "description": "A native Android short-video social media platform with a sleek dark theme, purple accents, and Firebase-backed architecture.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
