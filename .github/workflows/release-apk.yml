@@ -1,0 +1,159 @@
+name: Build and Release VYNOZA APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_notes:
+        description: "Release notes shown in the VYNOZA In-App Update dialog"
+        required: false
+        default: "Includes the built-in In-App Update System powered by GitHub Releases while preserving all VYNOZA creator features, accounts, and videos."
+      run_tests:
+        description: "Run Android unit & Robolectric tests before building APK"
+        type: boolean
+        required: false
+        default: true
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release-apk:
+    name: Build Signed Debug APK & Publish Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Verify signing keystore secret is configured
+        env:
+          KEYSTORE_B64: ${{ secrets.VYNOZA_DEBUG_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "::error::Missing repository secret VYNOZA_DEBUG_KEYSTORE_BASE64. Add the base64 contents of your original debug.keystore in GitHub Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Restore and verify original signing keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.VYNOZA_DEBUG_KEYSTORE_BASE64 }}
+        run: |
+          printf '%s' "$KEYSTORE_B64" | tr -d '\r\n ' | base64 --decode > debug.keystore
+          CERT_SHA1=$(keytool -list -v -keystore debug.keystore -storepass android -alias androiddebugkey | grep -E '^\s*SHA1:' | awk '{print $2}')
+          echo "Restored keystore SHA1: $CERT_SHA1"
+          EXPECTED_SHA1="04:C2:FE:6E:23:CD:6C:9E:CF:04:C6:E9:16:03:84:DC:FD:6F:2F:B8"
+          if [ "$CERT_SHA1" != "$EXPECTED_SHA1" ]; then
+            echo "::error::Keystore SHA-1 mismatch ($CERT_SHA1 != $EXPECTED_SHA1). Aborting to avoid publishing an incompatible APK."
+            rm -f debug.keystore
+            exit 1
+          fi
+
+      - name: Read app version metadata
+        id: meta
+        run: |
+          VERSION_CODE=$(grep -E '^\s*versionCode\s*=' app/build.gradle.kts | head -n1 | sed -E 's/[^0-9]//g')
+          VERSION_NAME=$(grep -E '^\s*versionName\s*=' app/build.gradle.kts | head -n1 | sed -E 's/.*"([^"]+)".*/\1/')
+          if [ -z "$VERSION_CODE" ] || [ -z "$VERSION_NAME" ]; then
+            echo "::error::Failed to parse versionCode or versionName from app/build.gradle.kts"
+            exit 1
+          fi
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG_NAME="${GITHUB_REF_NAME}"
+          else
+            TAG_NAME="v${VERSION_NAME}"
+          fi
+          echo "version_code=${VERSION_CODE}" >> "$GITHUB_OUTPUT"
+          echo "version_name=${VERSION_NAME}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Run unit tests
+        if: ${{ inputs.run_tests != false }}
+        run: ./gradlew :app:testDebugUnitTest --no-daemon
+
+      - name: Build signed debug APK
+        run: ./gradlew :app:assembleDebug --no-daemon
+
+      - name: Verify APK package, version, and signature
+        id: pkg
+        run: |
+          SRC_APK="app/build/outputs/apk/debug/app-debug.apk"
+          if [ ! -f "$SRC_APK" ]; then
+            echo "::error::Compiled APK not found at $SRC_APK"
+            exit 1
+          fi
+
+          OUT_APK="vynoza-v${{ steps.meta.outputs.version_name }}-b${{ steps.meta.outputs.version_code }}.apk"
+          cp "$SRC_APK" "$OUT_APK"
+
+          BUILD_TOOLS_DIR=$(ls -d "${ANDROID_HOME}/build-tools/"* | sort -V | tail -n1)
+          BADGING=$("${BUILD_TOOLS_DIR}/aapt2" dump badging "$OUT_APK" | head -n 5)
+          echo "$BADGING"
+          echo "$BADGING" | grep -q "name='com.vynoza.app'"
+          echo "$BADGING" | grep -q "versionCode='${{ steps.meta.outputs.version_code }}'"
+          echo "$BADGING" | grep -q "versionName='${{ steps.meta.outputs.version_name }}'"
+
+          "${BUILD_TOOLS_DIR}/apksigner" verify --print-certs "$OUT_APK" | grep -qi "04c2fe6e23cd6c9ecf04c6e9160384dcfd6f2fb8"
+
+          APK_SHA256=$(sha256sum "$OUT_APK" | awk '{print $1}')
+          APK_SIZE=$(wc -c < "$OUT_APK" | tr -d ' ')
+          echo "apk_file=${OUT_APK}" >> "$GITHUB_OUTPUT"
+          echo "apk_sha256=${APK_SHA256}" >> "$GITHUB_OUTPUT"
+          echo "apk_size=${APK_SIZE}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate release metadata & notes
+        env:
+          INPUT_NOTES: ${{ inputs.release_notes }}
+        run: |
+          NOTES="${INPUT_NOTES:-Includes VYNOZA updates and improvements.}"
+          cat > vynoza-update.json <<EOF
+          {
+            "versionCode": ${{ steps.meta.outputs.version_code }},
+            "versionName": "${{ steps.meta.outputs.version_name }}",
+            "tagName": "${{ steps.meta.outputs.tag }}",
+            "releaseNotes": $(python3 -c 'import json,os; print(json.dumps(os.environ.get("INPUT_NOTES") or "Includes VYNOZA updates and improvements."))'),
+            "apkSizeBytes": ${{ steps.pkg.outputs.apk_size }},
+            "sha256": "${{ steps.pkg.outputs.apk_sha256 }}"
+          }
+          EOF
+
+          cat > release-body.md <<EOF
+          versionCode: ${{ steps.meta.outputs.version_code }}
+          sha256: ${{ steps.pkg.outputs.apk_sha256 }}
+
+          ## VYNOZA v${{ steps.meta.outputs.version_name }} (Build ${{ steps.meta.outputs.version_code }})
+          ${NOTES}
+          EOF
+
+      - name: Remove temporary signing keystore
+        if: always()
+        run: rm -f debug.keystore
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: VYNOZA v${{ steps.meta.outputs.version_name }} (Build ${{ steps.meta.outputs.version_code }})
+          body_path: release-body.md
+          draft: false
+          prerelease: false
+          files: |
+            ${{ steps.pkg.outputs.apk_file }}
+            vynoza-update.json

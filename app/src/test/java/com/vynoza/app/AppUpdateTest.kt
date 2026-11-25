@@ -60,6 +60,14 @@ class AppUpdateTest {
     assertEquals("com.vynoza.app", BuildConfig.APPLICATION_ID)
     assertEquals(7, BuildConfig.VERSION_CODE)
     assertEquals("1.0.6", BuildConfig.VERSION_NAME)
+    assertEquals(
+      "https://github.com/abako0912/VYNOZA-1",
+      GitHubAppUpdateRepository.GITHUB_REPO_WEB_URL,
+    )
+    assertEquals(
+      "https://api.github.com/repos/abako0912/VYNOZA-1/releases/latest",
+      GitHubAppUpdateRepository.GITHUB_LATEST_RELEASE_URL,
+    )
 
     val pkgInfo =
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -86,7 +94,7 @@ class AppUpdateTest {
         "tag_name": "v1.0.7",
         "name": "VYNOZA v1.0.7",
         "draft": false,
-        "html_url": "https://github.com/abako0912/VYNOZA/releases/tag/v1.0.7",
+        "html_url": "https://github.com/abako0912/VYNOZA-1/releases/tag/v1.0.7",
         "published_at": "2026-11-25T10:00:00Z",
         "body": "versionCode: 8\nsha256: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\n- Faster feed loading\n- Bug fixes",
         "assets": [
@@ -94,7 +102,7 @@ class AppUpdateTest {
             "name": "vynoza-v1.0.7.apk",
             "size": 29500000,
             "content_type": "application/vnd.android.package-archive",
-            "browser_download_url": "https://github.com/abako0912/VYNOZA/releases/download/v1.0.7/vynoza-v1.0.7.apk"
+            "browser_download_url": "https://github.com/abako0912/VYNOZA-1/releases/download/v1.0.7/vynoza-v1.0.7.apk"
           }
         ]
       }
@@ -123,12 +131,12 @@ class AppUpdateTest {
         "assets": [
           {
             "name": "vynoza-update.json",
-            "browser_download_url": "https://github.com/abako0912/VYNOZA/releases/download/v1.0.8%2B9/vynoza-update.json"
+            "browser_download_url": "https://github.com/abako0912/VYNOZA-1/releases/download/v1.0.8%2B9/vynoza-update.json"
           },
           {
             "name": "app-release.apk",
             "size": 30100000,
-            "browser_download_url": "https://github.com/abako0912/VYNOZA/releases/download/v1.0.8%2B9/app-release.apk"
+            "browser_download_url": "https://github.com/abako0912/VYNOZA-1/releases/download/v1.0.8%2B9/app-release.apk"
           }
         ]
       }
@@ -139,7 +147,7 @@ class AppUpdateTest {
     assertEquals(9, parsedFromTag!!.versionCode)
     assertEquals("1.0.8", parsedFromTag.versionName)
     assertEquals(
-      "https://github.com/abako0912/VYNOZA/releases/download/v1.0.8%2B9/vynoza-update.json",
+      "https://github.com/abako0912/VYNOZA-1/releases/download/v1.0.8%2B9/vynoza-update.json",
       GitHubAppUpdateRepository.extractMetadataJsonAssetUrl(tagReleaseJson),
     )
 
@@ -174,7 +182,7 @@ class AppUpdateTest {
         "assets": [
           {
             "name": "vynoza.apk",
-            "browser_download_url": "https://github.com/abako0912/VYNOZA/releases/download/v1.0.9/vynoza.apk"
+            "browser_download_url": "https://github.com/abako0912/VYNOZA-1/releases/download/v1.0.9/vynoza.apk"
           }
         ]
       }
@@ -204,7 +212,7 @@ class AppUpdateTest {
         "assets": [
           {
             "name": "checksums.txt",
-            "browser_download_url": "https://github.com/abako0912/VYNOZA/releases/download/v1.0.9/checksums.txt"
+            "browser_download_url": "https://github.com/abako0912/VYNOZA-1/releases/download/v1.0.9/checksums.txt"
           }
         ]
       }
@@ -544,7 +552,7 @@ class AppUpdateTest {
     versionName: String,
     releaseNotes: String = "Release notes",
     apkDownloadUrl: String =
-      "https://github.com/abako0912/VYNOZA/releases/download/v$versionName/vynoza-v$versionName.apk",
+      "https://github.com/abako0912/VYNOZA-1/releases/download/v$versionName/vynoza-v$versionName.apk",
     apkSizeBytes: Long? = null,
     sha256: String? = null,
   ) =

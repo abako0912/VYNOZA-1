@@ -169,9 +169,9 @@ class GitHubAppUpdateRepository(
   }
 
   companion object {
-    const val GITHUB_REPO_WEB_URL = "https://github.com/abako0912/VYNOZA"
+    const val GITHUB_REPO_WEB_URL = "https://github.com/abako0912/VYNOZA-1"
     const val GITHUB_LATEST_RELEASE_URL =
-      "https://api.github.com/repos/abako0912/VYNOZA/releases/latest"
+      "https://api.github.com/repos/abako0912/VYNOZA-1/releases/latest"
 
     private const val PREFS_NAME = "vynoza_app_updates"
     private const val KEY_LAST_CHECK_AT = "last_check_at_ms"
