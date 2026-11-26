@@ -154,7 +154,14 @@ jobs:
           echo "$BADGING" | grep -q "versionCode='${{ steps.meta.outputs.version_code }}'"
           echo "$BADGING" | grep -q "versionName='${{ steps.meta.outputs.version_name }}'"
 
-          "${BUILD_TOOLS_DIR}/apksigner" verify --print-certs "$OUT_APK" | grep -qi "04c2fe6e23cd6c9ecf04c6e9160384dcfd6f2fb8"
+          "${BUILD_TOOLS_DIR}/zipalign" -c -v -P 16 4 "$OUT_APK" > /dev/null
+
+          VERIFY_OUT=$("${BUILD_TOOLS_DIR}/apksigner" verify --min-sdk-version 21 --verbose --print-certs "$OUT_APK" 2>&1)
+          echo "$VERIFY_OUT" | grep -v "^WARNING:"
+          echo "$VERIFY_OUT" | grep -q "Verified using v1 scheme (JAR signing): true"
+          echo "$VERIFY_OUT" | grep -q "Verified using v2 scheme (APK Signature Scheme v2): true"
+          echo "$VERIFY_OUT" | grep -q "Verified using v3 scheme (APK Signature Scheme v3): true"
+          echo "$VERIFY_OUT" | grep -qi "04c2fe6e23cd6c9ecf04c6e9160384dcfd6f2fb8"
 
           APK_SHA256=$(sha256sum "$OUT_APK" | awk '{print $1}')
           APK_SIZE=$(wc -c < "$OUT_APK" | tr -d ' ')
