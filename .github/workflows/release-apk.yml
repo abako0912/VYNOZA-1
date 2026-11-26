@@ -28,12 +28,17 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Verify signing keystore secret is configured
+      - name: Verify required repository secrets are configured
         env:
           KEYSTORE_B64: ${{ secrets.VYNOZA_DEBUG_KEYSTORE_BASE64 }}
+          GOOGLE_SERVICES_RAW: ${{ secrets.VYNOZA_GOOGLE_SERVICES_JSON }}
         run: |
           if [ -z "$KEYSTORE_B64" ]; then
             echo "::error::Missing repository secret VYNOZA_DEBUG_KEYSTORE_BASE64. Add the base64 contents of your original debug.keystore in GitHub Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+          if [ ! -f app/google-services.json ] && [ -z "$GOOGLE_SERVICES_RAW" ]; then
+            echo "::error::app/google-services.json is missing from the repository and secret VYNOZA_GOOGLE_SERVICES_JSON is not set. Copy app/google-services.json from AI Studio Code view into GitHub Settings -> Secrets and variables -> Actions -> VYNOZA_GOOGLE_SERVICES_JSON."
             exit 1
           fi
 
@@ -64,6 +69,42 @@ jobs:
             echo "::error::Keystore SHA-1 mismatch ($CERT_SHA1 != $EXPECTED_SHA1). Aborting to avoid publishing an incompatible APK."
             rm -f debug.keystore
             exit 1
+          fi
+
+      - name: Restore and verify Firebase google-services.json
+        id: firebase_cfg
+        env:
+          GOOGLE_SERVICES_RAW: ${{ secrets.VYNOZA_GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -f app/google-services.json ]; then
+            echo "Using app/google-services.json from repository checkout."
+            echo "restored=false" >> "$GITHUB_OUTPUT"
+          else
+            python3 - <<'PY'
+          import base64, json, os, sys
+
+          raw = os.environ.get("GOOGLE_SERVICES_RAW", "").strip()
+          if not raw:
+              sys.exit("Missing VYNOZA_GOOGLE_SERVICES_JSON secret.")
+          if raw.startswith("{"):
+              content = raw
+          else:
+              content = base64.b64decode("".join(raw.split())).decode("utf-8")
+
+          parsed = json.loads(content)
+          project_id = parsed.get("project_info", {}).get("project_id")
+          packages = [
+              c.get("client_info", {}).get("android_client_info", {}).get("package_name")
+              for c in parsed.get("client", [])
+          ]
+          if project_id != "gen-lang-client-0304923032" or "com.vynoza.app" not in packages:
+              sys.exit(f"Invalid google-services.json (project_id={project_id}, packages={packages}).")
+
+          with open("app/google-services.json", "w", encoding="utf-8") as f:
+              f.write(content)
+          print("Restored and verified app/google-services.json.")
+          PY
+            echo "restored=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Read app version metadata
@@ -145,9 +186,13 @@ jobs:
           ${NOTES}
           EOF
 
-      - name: Remove temporary signing keystore
+      - name: Remove temporary signing and Firebase config files
         if: always()
-        run: rm -f debug.keystore
+        run: |
+          rm -f debug.keystore
+          if [ "${{ steps.firebase_cfg.outputs.restored }}" = "true" ]; then
+            rm -f app/google-services.json
+          fi
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
