@@ -62,15 +62,31 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vynoza.app.R
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.rounded.Bookmark
+import androidx.compose.material.icons.rounded.CameraAlt
+import androidx.compose.material.icons.rounded.DeleteOutline
+import androidx.compose.material.icons.rounded.MovieCreation
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import coil.compose.AsyncImage
+import com.vynoza.app.core.studio.CreateStudioDraft
 import com.vynoza.app.data.service.ClipSource
+import com.vynoza.app.data.studio.StudioMediaProcessor
+import com.vynoza.app.data.studio.StudioStoreProvider
 import com.vynoza.app.ui.theme.VynozaBorderSubtle
 import com.vynoza.app.ui.theme.VynozaLavenderSoft
 import com.vynoza.app.ui.theme.VynozaObsidian
 import com.vynoza.app.ui.theme.VynozaPurplePrimary
+import com.vynoza.app.ui.theme.VynozaRoseAccent
 import com.vynoza.app.ui.theme.VynozaSuccess
 import com.vynoza.app.ui.theme.VynozaSurfaceDeep
 import com.vynoza.app.ui.theme.VynozaSurfaceElevated
 import com.vynoza.app.ui.theme.VynozaVioletContainer
+import kotlinx.coroutines.launch
 import java.io.File
 
 @Composable
@@ -78,11 +94,16 @@ fun CreateScreen(
   viewModel: CreateViewModel,
   onNavigateToHome: () -> Unit = {},
   onOpenTemplatesStudio: () -> Unit = {},
+  onOpenCameraStudio: () -> Unit = {},
+  onOpenVideoEditor: (CreateStudioDraft) -> Unit = {},
   modifier: Modifier = Modifier,
 ) {
   val context = LocalContext.current
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
   var pendingCaptureUri by remember { mutableStateOf<Uri?>(null) }
+  val scope = rememberCoroutineScope()
+  val localStore = remember(context) { StudioStoreProvider.get(context) }
+  val savedDrafts by localStore.observeDrafts().collectAsStateWithLifecycle(initialValue = emptyList())
 
   // Zero-permission Google Play compliant gallery video picker
   val galleryPickerLauncher =
@@ -91,6 +112,20 @@ fun CreateScreen(
     ) { uri ->
       if (uri != null) {
         viewModel.onClipAcquired(context, uri, ClipSource.GALLERY_PICKER)
+      }
+    }
+
+  val editorGalleryPickerLauncher =
+    rememberLauncherForActivityResult(
+      contract = ActivityResultContracts.PickMultipleVisualMedia(maxItems = 8),
+    ) { uris ->
+      if (uris.isNotEmpty()) {
+        scope.launch {
+          val clips = StudioMediaProcessor.inspectGalleryUris(context, uris)
+          if (clips.isNotEmpty()) {
+            onOpenVideoEditor(CreateStudioDraft(clips = clips))
+          }
+        }
       }
     }
 
@@ -192,6 +227,142 @@ fun CreateScreen(
         buttonTag = "create_templates_studio_button",
         onClick = onOpenTemplatesStudio,
       )
+
+      // Native VYNOZA Camera & Video Editor Studio
+      Surface(
+        shape = RoundedCornerShape(22.dp),
+        color = VynozaSurfaceElevated,
+        border = BorderStroke(1.dp, VynozaPurplePrimary.copy(alpha = 0.5f)),
+        modifier = Modifier.fillMaxWidth().testTag("create_studio_hub_card"),
+      ) {
+        Column(
+          modifier = Modifier.padding(18.dp),
+          verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+          Text(
+            text = "VYNOZA Camera & Video Editor",
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            color = Color.White,
+          )
+          Text(
+            text = "Capture with live effects & Audius sound, trim clips, mix audio tracks, pick covers, and save drafts.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+          )
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+          ) {
+            Button(
+              onClick = onOpenCameraStudio,
+              enabled = !uiState.isPublishing,
+              colors = ButtonDefaults.buttonColors(containerColor = VynozaPurplePrimary, contentColor = Color.White),
+              shape = RoundedCornerShape(14.dp),
+              modifier = Modifier.weight(1f).height(48.dp).testTag("create_open_camera_studio_button"),
+            ) {
+              Icon(Icons.Rounded.CameraAlt, contentDescription = null, modifier = Modifier.size(18.dp))
+              Spacer(modifier = Modifier.width(6.dp))
+              Text(stringResource(R.string.video_editor_open_camera_studio), maxLines = 1)
+            }
+            OutlinedButton(
+              onClick = {
+                editorGalleryPickerLauncher.launch(
+                  PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
+                )
+              },
+              enabled = !uiState.isPublishing,
+              border = BorderStroke(1.dp, VynozaPurplePrimary),
+              shape = RoundedCornerShape(14.dp),
+              modifier = Modifier.weight(1f).height(48.dp).testTag("create_open_video_editor_button"),
+            ) {
+              Icon(Icons.Rounded.MovieCreation, contentDescription = null, modifier = Modifier.size(18.dp))
+              Spacer(modifier = Modifier.width(6.dp))
+              Text(stringResource(R.string.video_editor_open_editor_gallery), maxLines = 1)
+            }
+          }
+        }
+      }
+
+      if (savedDrafts.isNotEmpty()) {
+        Surface(
+          shape = RoundedCornerShape(20.dp),
+          color = VynozaSurfaceElevated,
+          border = BorderStroke(1.dp, VynozaBorderSubtle),
+          modifier = Modifier.fillMaxWidth().testTag("create_saved_drafts_section"),
+        ) {
+          Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+          ) {
+            Row(
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+              Icon(Icons.Rounded.Bookmark, contentDescription = null, tint = VynozaLavenderSoft, modifier = Modifier.size(18.dp))
+              Text(
+                text = "${stringResource(R.string.video_editor_saved_drafts)} (${savedDrafts.size})",
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                color = Color.White,
+              )
+            }
+            savedDrafts.forEach { draft ->
+              Surface(
+                onClick = { onOpenVideoEditor(draft) },
+                shape = RoundedCornerShape(14.dp),
+                color = VynozaSurfaceDeep,
+                border = BorderStroke(1.dp, VynozaBorderSubtle),
+                modifier = Modifier.fillMaxWidth().testTag("create_draft_item_${draft.id}"),
+              ) {
+                Row(
+                  modifier = Modifier.padding(10.dp),
+                  verticalAlignment = Alignment.CenterVertically,
+                  horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                  Box(
+                    modifier = Modifier.size(48.dp).clip(RoundedCornerShape(10.dp)).background(VynozaVioletContainer),
+                    contentAlignment = Alignment.Center,
+                  ) {
+                    if (!draft.coverFrameUriString.isNullOrBlank()) {
+                      AsyncImage(
+                        model = Uri.parse(draft.coverFrameUriString),
+                        contentDescription = draft.title,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                      )
+                    } else {
+                      Icon(Icons.Rounded.MovieCreation, contentDescription = null, tint = VynozaLavenderSoft)
+                    }
+                  }
+                  Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                      text = draft.title.ifBlank { "Untitled Draft" },
+                      style = MaterialTheme.typography.titleSmall,
+                      color = Color.White,
+                      maxLines = 1,
+                      overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                      text = "${draft.clips.size} clip(s) • ${draft.privacy.label}",
+                      style = MaterialTheme.typography.bodySmall,
+                      color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                  }
+                  androidx.compose.material3.IconButton(
+                    onClick = { scope.launch { localStore.deleteDraft(draft.id) } },
+                    modifier = Modifier.size(48.dp).testTag("create_draft_delete_${draft.id}"),
+                  ) {
+                    Icon(
+                      imageVector = Icons.Rounded.DeleteOutline,
+                      contentDescription = "Delete draft ${draft.title}",
+                      tint = VynozaRoseAccent,
+                    )
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
 
       if (uiState.permissionDeniedNotice) {
         Surface(

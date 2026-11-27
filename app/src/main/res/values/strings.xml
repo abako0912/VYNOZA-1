@@ -150,5 +150,50 @@
     <string name="update_allow_installs">Allow &amp; Continue</string>
     <string name="update_data_safe_note">Your account, videos, followers, likes, and comments stay preserved in the cloud.</string>
     <string name="update_section_title">App Version &amp; Updates</string>
+
+    <!-- Music Studio -->
+    <string name="music_studio_title">Music Studio</string>
+    <string name="music_studio_audius_subtitle">Stream &amp; trim open creator tracks</string>
+    <string name="music_studio_back">Close Music Studio</string>
+    <string name="music_studio_search_hint">Search Audius songs, artists, or moods</string>
+    <string name="music_studio_use_sound">Use Sound</string>
+
+    <!-- Camera Studio -->
+    <string name="camera_studio_title">Camera Studio</string>
+    <string name="camera_studio_close">Close Camera Studio</string>
+    <string name="camera_studio_add_sound">Add Sound</string>
+    <string name="camera_studio_flip">Flip Camera</string>
+    <string name="camera_studio_flash">Flash</string>
+    <string name="camera_studio_timer">Timer</string>
+    <string name="camera_studio_layout">Layout</string>
+    <string name="camera_studio_effects">Effects</string>
+    <string name="camera_studio_gallery">Gallery</string>
+    <string name="camera_studio_permission_title">Camera Access Needed</string>
+    <string name="camera_studio_permission_body">Grant Camera and Microphone access to record videos and capture photos, or pick media from your gallery or create a Text card.</string>
+    <string name="camera_studio_grant_permission">Allow Camera &amp; Mic</string>
+    <string name="camera_studio_open_settings">App Settings</string>
+    <string name="camera_studio_retake">Retake</string>
+    <string name="camera_studio_use_clip">Use Clip</string>
+
+    <!-- Video Editor & Publishing -->
+    <string name="video_editor_title">Video Editor</string>
+    <string name="video_editor_back">Back</string>
+    <string name="video_editor_tab_edit">Edit &amp; Audio</string>
+    <string name="video_editor_tab_publish">Cover &amp; Publish</string>
+    <string name="video_editor_export_mix">Export Mixed MP4</string>
+    <string name="video_editor_cancel_export">Cancel Export</string>
+    <string name="video_editor_save_draft">Save Draft</string>
+    <string name="video_editor_publish">Publish to VYNOZA</string>
+    <string name="video_editor_add_music">Add Sound</string>
+    <string name="video_editor_change_music">Change Sound</string>
+    <string name="video_editor_remove_music">Remove</string>
+    <string name="video_editor_original_volume">Original Audio</string>
+    <string name="video_editor_music_volume">Music Volume</string>
+    <string name="video_editor_sync_offset">Music Sync Delay</string>
+    <string name="video_editor_cover_section">Video Cover Frame</string>
+    <string name="video_editor_capture_cover">Capture Cover Frame</string>
+    <string name="video_editor_saved_drafts">Saved Studio Drafts</string>
+    <string name="video_editor_open_camera_studio">Camera Studio</string>
+    <string name="video_editor_open_editor_gallery">Edit from Gallery</string>
 </resources>
 

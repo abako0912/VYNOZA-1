@@ -80,7 +80,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.vynoza.app.core.studio.CreateStudioDraft
 import com.vynoza.app.data.service.ClipSource
+import com.vynoza.app.ui.studio.CameraStudioRoute
+import com.vynoza.app.ui.studio.VideoEditorRoute
 import com.vynoza.app.ui.templates.TemplatesStudioScreen
 import com.vynoza.app.ui.templates.TemplatesStudioViewModel
 import com.vynoza.app.ui.theme.VynozaLavenderSoft
@@ -92,6 +95,8 @@ import com.vynoza.app.ui.update.AppUpdateViewModel
 
 private const val PUBLIC_PROFILE_ROUTE = "public_profile/{userId}"
 private const val TEMPLATES_STUDIO_ROUTE = "templates_studio"
+private const val CAMERA_STUDIO_ROUTE = "camera_studio"
+private const val VIDEO_EDITOR_ROUTE = "video_editor"
 
 enum class VynozaDestination(
   val route: String,
@@ -187,6 +192,22 @@ private fun VynozaMainShell(
   val navBackStackEntry by navController.currentBackStackEntryAsState()
   val currentRoute = navBackStackEntry?.destination?.route
   var pendingTemplateVideoUri by remember { mutableStateOf<Uri?>(null) }
+  var pendingEditorDraft by remember { mutableStateOf<CreateStudioDraft?>(null) }
+
+  val sharedCreateVm: CreateViewModel =
+    viewModel(
+      key = "create_$currentUserId",
+      factory = viewModelFactory {
+        initializer {
+          CreateViewModel(
+            mediaStorageService = mediaStorageService,
+            videoRepository = videoRepository,
+            userRepository = userRepository,
+            currentUserId = currentUserId,
+          )
+        }
+      },
+    )
 
   fun navigateTo(route: String) {
     navController.navigate(route) {
@@ -260,7 +281,10 @@ private fun VynozaMainShell(
     modifier = Modifier.fillMaxSize().background(VynozaObsidian)
   ) {
     val useNavigationRail = maxWidth >= 600.dp
-    val isFullScreenRoute = currentRoute == TEMPLATES_STUDIO_ROUTE
+    val isFullScreenRoute =
+      currentRoute == TEMPLATES_STUDIO_ROUTE ||
+        currentRoute == CAMERA_STUDIO_ROUTE ||
+        currentRoute == VIDEO_EDITOR_ROUTE
 
     Scaffold(
       containerColor = VynozaObsidian,
@@ -373,36 +397,85 @@ private fun VynozaMainShell(
 
             composable(VynozaDestination.CREATE.route) {
               val context = LocalContext.current
-              val createVm: CreateViewModel =
-                viewModel(
-                  key = "create_$currentUserId",
-                  factory = viewModelFactory {
-                    initializer {
-                      CreateViewModel(
-                        mediaStorageService = mediaStorageService,
-                        videoRepository = videoRepository,
-                        userRepository = userRepository,
-                        currentUserId = currentUserId,
-                      )
-                    }
-                  },
-                )
               LaunchedEffect(pendingTemplateVideoUri) {
                 val uri = pendingTemplateVideoUri
                 if (uri != null) {
-                  createVm.onClipAcquired(context, uri, ClipSource.TEMPLATE_STUDIO)
+                  sharedCreateVm.onClipAcquired(context, uri, ClipSource.TEMPLATE_STUDIO)
                   pendingTemplateVideoUri = null
                 }
               }
               CreateScreen(
-                viewModel = createVm,
+                viewModel = sharedCreateVm,
                 onNavigateToHome = { navigateTo(VynozaDestination.HOME.route) },
                 onOpenTemplatesStudio = {
                   navController.navigate(TEMPLATES_STUDIO_ROUTE) {
                     launchSingleTop = true
                   }
                 },
+                onOpenCameraStudio = {
+                  navController.navigate(CAMERA_STUDIO_ROUTE) {
+                    launchSingleTop = true
+                  }
+                },
+                onOpenVideoEditor = { draft ->
+                  if (!sharedCreateVm.uiState.value.isPublishing) {
+                    sharedCreateVm.clearSelection()
+                  }
+                  pendingEditorDraft = draft
+                  navController.navigate(VIDEO_EDITOR_ROUTE) {
+                    launchSingleTop = true
+                  }
+                },
               )
+            }
+
+            composable(CAMERA_STUDIO_ROUTE) {
+              CameraStudioRoute(
+                onClose = { navController.popBackStack() },
+                onCaptureCompleted = { output ->
+                  if (!sharedCreateVm.uiState.value.isPublishing) {
+                    sharedCreateVm.clearSelection()
+                  }
+                  pendingEditorDraft =
+                    CreateStudioDraft(
+                      clips = output.clips,
+                      selectedMusic = output.selectedMusic,
+                      effectPresetId = output.effectPresetId,
+                    )
+                  navController.navigate(VIDEO_EDITOR_ROUTE) {
+                    popUpTo(CAMERA_STUDIO_ROUTE) { inclusive = true }
+                    launchSingleTop = true
+                  }
+                },
+              )
+            }
+
+            composable(VIDEO_EDITOR_ROUTE) {
+              val draft = pendingEditorDraft
+              if (draft == null) {
+                LaunchedEffect(Unit) {
+                  navController.popBackStack()
+                }
+              } else {
+                VideoEditorRoute(
+                  initialDraft = draft,
+                  createViewModel = sharedCreateVm,
+                  onBack = {
+                    if (!sharedCreateVm.uiState.value.isPublishing) {
+                      sharedCreateVm.clearSelection()
+                    }
+                    pendingEditorDraft = null
+                    navController.popBackStack()
+                  },
+                  onNavigateToHome = {
+                    if (!sharedCreateVm.uiState.value.isPublishing) {
+                      sharedCreateVm.clearSelection()
+                    }
+                    pendingEditorDraft = null
+                    navigateTo(VynozaDestination.HOME.route)
+                  },
+                )
+              }
             }
 
             composable(TEMPLATES_STUDIO_ROUTE) {

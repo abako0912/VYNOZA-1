@@ -9,4 +9,13 @@
     <cache-path
         name="vynoza_app_updates"
         path="updates/" />
+    <cache-path
+        name="vynoza_camera_studio"
+        path="studio/" />
+    <files-path
+        name="vynoza_drafts"
+        path="drafts/" />
+    <files-path
+        name="vynoza_studio_media"
+        path="studio_media/" />
 </paths>

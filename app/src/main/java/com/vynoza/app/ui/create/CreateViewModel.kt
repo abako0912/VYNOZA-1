@@ -116,6 +116,35 @@ class CreateViewModel(
     _uiState.update { it.copy(visibility = normalized) }
   }
 
+  fun prepareEditedClipForPublish(
+    context: Context,
+    uri: Uri,
+    source: ClipSource,
+    caption: String,
+    visibility: String,
+    autoPublish: Boolean = true,
+  ) {
+    if (_uiState.value.isPublishing) return
+    val clip = mediaStorageService.inspectLocalClip(context, uri, source)
+    val validation = mediaStorageService.validateClipForUpload(context, clip)
+    val validationError = (validation as? ClipValidationResult.Invalid)?.reason
+    val normalizedVisibility = if (visibility == "private") "private" else "public"
+    uploadedClipCache = null
+
+    _uiState.value =
+      CreateUiState(
+        selectedClip = clip,
+        validationError = validationError,
+        caption = caption.take(MAX_CAPTION_LENGTH),
+        visibility = normalizedVisibility,
+        publishState = PublishPostState.Idle,
+        permissionDeniedNotice = false,
+      )
+    if (autoPublish && validationError == null) {
+      publishSelectedClip(context)
+    }
+  }
+
   fun publishSelectedClip(context: Context) {
     val snapshot = _uiState.value
     if (snapshot.isPublishing) return

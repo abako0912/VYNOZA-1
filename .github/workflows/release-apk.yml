@@ -32,6 +32,7 @@ jobs:
         env:
           KEYSTORE_B64: ${{ secrets.VYNOZA_DEBUG_KEYSTORE_BASE64 }}
           GOOGLE_SERVICES_RAW: ${{ secrets.VYNOZA_GOOGLE_SERVICES_JSON }}
+          AUDIUS_API_KEY_SECRET: ${{ secrets.AUDIUS_API_KEY }}
         run: |
           if [ -z "$KEYSTORE_B64" ]; then
             echo "::error::Missing repository secret VYNOZA_DEBUG_KEYSTORE_BASE64. Add the base64 contents of your original debug.keystore in GitHub Settings -> Secrets and variables -> Actions."
@@ -39,6 +40,10 @@ jobs:
           fi
           if [ ! -f app/google-services.json ] && [ -z "$GOOGLE_SERVICES_RAW" ]; then
             echo "::error::app/google-services.json is missing from the repository and secret VYNOZA_GOOGLE_SERVICES_JSON is not set. Copy app/google-services.json from AI Studio Code view into GitHub Settings -> Secrets and variables -> Actions -> VYNOZA_GOOGLE_SERVICES_JSON."
+            exit 1
+          fi
+          if [ -z "$AUDIUS_API_KEY_SECRET" ]; then
+            echo "::error::Missing repository secret AUDIUS_API_KEY. Add your read-only Audius API key in GitHub Settings -> Secrets and variables -> Actions -> AUDIUS_API_KEY."
             exit 1
           fi
 
@@ -125,6 +130,17 @@ jobs:
           echo "version_name=${VERSION_NAME}" >> "$GITHUB_OUTPUT"
           echo "tag=${TAG_NAME}" >> "$GITHUB_OUTPUT"
 
+      - name: Configure Audius API key for build
+        env:
+          AUDIUS_API_KEY_SECRET: ${{ secrets.AUDIUS_API_KEY }}
+        run: |
+          CLEAN_KEY=$(printf '%s' "$AUDIUS_API_KEY_SECRET" | tr -d '\r\n ')
+          if [ -z "$CLEAN_KEY" ]; then
+            echo "::error::AUDIUS_API_KEY secret is empty after trimming whitespace."
+            exit 1
+          fi
+          printf 'AUDIUS_API_KEY=%s\n' "$CLEAN_KEY" > .env
+
       - name: Make Gradle wrapper executable
         run: chmod +x gradlew
 
@@ -193,10 +209,10 @@ jobs:
           ${NOTES}
           EOF
 
-      - name: Remove temporary signing and Firebase config files
+      - name: Remove temporary signing, Firebase, and secret config files
         if: always()
         run: |
-          rm -f debug.keystore
+          rm -f debug.keystore .env
           if [ "${{ steps.firebase_cfg.outputs.restored }}" = "true" ]; then
             rm -f app/google-services.json
           fi
