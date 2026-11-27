@@ -58,8 +58,8 @@ class AppUpdateTest {
   fun `build config and manifest declare version 1_0_7 build 8 and install permission`() {
     val context = ApplicationProvider.getApplicationContext<Context>()
     assertEquals("com.vynoza.app", BuildConfig.APPLICATION_ID)
-    assertEquals(8, BuildConfig.VERSION_CODE)
-    assertEquals("1.0.7", BuildConfig.VERSION_NAME)
+    assertEquals(9, BuildConfig.VERSION_CODE)
+    assertEquals("1.0.8", BuildConfig.VERSION_NAME)
     assertEquals(
       "https://github.com/abako0912/VYNOZA-1",
       GitHubAppUpdateRepository.GITHUB_REPO_WEB_URL,
